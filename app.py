@@ -19,3 +19,7 @@ def results():
         form_data = request.form
         output_class = classifier_inference(form_data['input'])
         return "CLASS:  " + idx_to_article[output_class]
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
