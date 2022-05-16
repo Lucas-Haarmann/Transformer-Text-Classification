@@ -10,8 +10,11 @@ MAX_SEQ_LEN = 4096
 NUM_LABELS = len(dataset_labels.idx_to_article)
 
 '''
-Convert list of facts into a single string
-Convert string labels into integers
+Takes in, preprocesses and returns huggingface dataset.
+Converts list of case facts into a single string.
+Strings longer than MAX_SEQ_LEN are truncated at the front
+(empirically better results than truncating at the rear).
+Converts string labels into integers.
 '''
 def combine_facts(example):
     combined_facts = ''
@@ -32,6 +35,11 @@ def combine_facts(example):
     example['labels'] = label_list[0]
     return example
 
+'''
+Load ECtHR dataset, preprocess and tokenize using pretrained
+Longformer tokenizer.
+Returns huggingface dataset.
+'''
 def collect_transformer_dataset():
     dataset = load_dataset('ecthr_cases', 'alleged-violation-prediction')
     dataset = dataset.remove_columns(['silver_rationales', 'gold_rationales'])
@@ -44,6 +52,10 @@ def collect_transformer_dataset():
 
     return dataset
 
+"""
+Similar to combine_facts, but for the baseline classifier.
+There is no MAX_SEQ_LEN restriction.
+"""
 def combine_facts_classifier(example):
     combined_facts = ''
     for fact in example['facts']:
@@ -63,6 +75,14 @@ def combine_facts_classifier(example):
     example['labels'] = label_list[0]
     return example
 
+'''
+Load, preprocess and vectorize ECtHR dataset from huggingface.
+NB 1: TF-IDF hyperparameters have a huge affect on model training and results.
+Room for experimentation and improvement here.
+NB 2: TF-IDF vectorizer object is saved using pickle. This is necessary
+to load the same vectorizer (fitted to train set) for testing and inference.
+Returns 3 PyTorch datasets.
+'''
 def collect_classifier_dataset():
     dataset = load_dataset('ecthr_cases', 'alleged-violation-prediction')
     dataset = dataset.remove_columns(['silver_rationales', 'gold_rationales'])
@@ -83,8 +103,6 @@ def collect_classifier_dataset():
 
     # Save tf-idf vocab object
     pickle.dump(tfidf, open("tfidf.pickle", "wb"))
-
-    print(X_train.shape)
 
     y_train = torch.tensor(dataset['train']['labels'])
     y_val = torch.tensor(dataset['validation']['labels'])

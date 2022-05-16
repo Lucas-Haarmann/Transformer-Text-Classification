@@ -8,6 +8,9 @@ from models import Classifier
 
 PATH = './classifier_model2.pth'
 
+"""
+Load baseline classifier using saved model parameters (at PATH) and test it on ECHR.
+"""
 def test_classifier():
     train_set, val_set, test_set = collect_classifier_dataset()
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=4, shuffle=False, num_workers=2)

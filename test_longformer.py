@@ -7,15 +7,16 @@ from load_data import collect_transformer_dataset
 
 PATH = './test_trainer/checkpoint-1000'
 
+"""
+Load model from specified checkpoint file (see PATH) and test.
+NB: inference is slow, can use GPU tensors where possible
+"""
 def test_transformer():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(device)
-
     dataset = collect_transformer_dataset()
     test_y = dataset['test']['labels']
     test_y = test_y.to(device)
     test_x = torch.cat((dataset['test']['input_ids'], dataset['test']['attention_mask']), dim=-1)
-    print(test_x.shape)
     test_x = test_x.to(device)
 
     test_data = torch.utils.data.TensorDataset(test_x, test_y)

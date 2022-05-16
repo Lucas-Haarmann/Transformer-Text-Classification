@@ -8,6 +8,11 @@ from models import Classifier
 
 PATH = './classifier_model3.pth'
 
+"""
+Train baseline classifier. Uses Adam optimizer with cross entropy loss.
+Hyperparameters and number of epochs are yet to be fully optimized.
+lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5 yields 51% accuracy @ 30 epochs
+"""
 def train_classifier():
     train_set, val_set, test_set = collect_classifier_dataset()
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=10, shuffle=True, num_workers=2)

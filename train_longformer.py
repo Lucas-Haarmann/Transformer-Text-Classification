@@ -5,11 +5,19 @@ from transformers import LongformerForSequenceClassification, TrainingArguments,
 import dataset_labels
 from load_data import collect_transformer_dataset
 
+"""
+Evaluates a given classification metric
+"""
 def eval_func(metric, output):
     logits, labels = output
     preds = np.argmax(logits, axis=-1)
     return metric.compute(predictions=preds, references=labels)
 
+
+"""
+Longformer training using huggingface library.
+Model checkpoints saved to 'test_trainer' directory.
+"""
 def train_transformer():
     dataset = collect_transformer_dataset()
     num_labels = len(dataset_labels.idx_to_article)
