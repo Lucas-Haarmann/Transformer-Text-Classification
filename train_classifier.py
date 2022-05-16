@@ -6,12 +6,12 @@ from load_data import collect_classifier_dataset
 import dataset_labels
 from models import Classifier
 
-PATH = './classifier_model.pth'
+PATH = './classifier_model3.pth'
 
 def train_classifier():
     train_set, val_set, test_set = collect_classifier_dataset()
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=4, shuffle=True, num_workers=2)
-    val_loader = torch.utils.data.DataLoader(val_set, batch_size=4, shuffle=False, num_workers=2)
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=10, shuffle=True, num_workers=2)
+    val_loader = torch.utils.data.DataLoader(val_set, batch_size=10, shuffle=False, num_workers=2)
     classes = dataset_labels.idx_to_article
 
     example = iter(train_loader).next()[0]
@@ -19,9 +19,9 @@ def train_classifier():
     print(input_dim)
     model = Classifier(input_dim=input_dim, num_classes=len(classes))
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5, amsgrad=False)
 
-    for epoch in range(3):
+    for epoch in range(30):
         running_loss = 0.0
         for i, data in enumerate(train_loader, 0):
             inputs, labels = data

@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 import torch
 from datasets import load_dataset
 from transformers import LongformerTokenizer
@@ -28,7 +29,7 @@ def combine_facts(example):
                 label_list.append(dataset_labels.label_to_idx[label])
             else:
                 label_list.append(unclear)
-    example['labels'] = min(label_list)
+    example['labels'] = label_list[0]
     return example
 
 def collect_transformer_dataset():
@@ -43,7 +44,7 @@ def collect_transformer_dataset():
 
     return dataset
 
-def preprocess_classifier(example, vectorizer):
+def combine_facts_classifier(example):
     combined_facts = ''
     for fact in example['facts']:
         combined_facts += fact[4:]
@@ -59,22 +60,31 @@ def preprocess_classifier(example, vectorizer):
                 label_list.append(dataset_labels.label_to_idx[label])
             else:
                 label_list.append(unclear)
-    example['labels'] = min(label_list)
+    example['labels'] = label_list[0]
     return example
 
 def collect_classifier_dataset():
     dataset = load_dataset('ecthr_cases', 'alleged-violation-prediction')
     dataset = dataset.remove_columns(['silver_rationales', 'gold_rationales'])
-    dataset = dataset.map(combine_facts)
+    dataset = dataset.map(combine_facts_classifier)
 
     tfidf = TfidfVectorizer(input='content',
                             sublinear_tf=True,
+                            strip_accents='ascii',
                             analyzer='word',
                             ngram_range=(1, 1),
-                            stop_words='english')
-    X_train = torch.tensor(tfidf.fit_transform(dataset['train']['facts']).toarray()).float()
+                            stop_words='english',
+                            max_df=0.9,
+                            max_features=2000)
+    tfidf = tfidf.fit(dataset['train']['facts'])
+    X_train = torch.tensor(tfidf.transform(dataset['train']['facts']).toarray()).float()
     X_val = torch.tensor(tfidf.transform(dataset['validation']['facts']).toarray()).float()
     X_test = torch.tensor(tfidf.transform(dataset['test']['facts']).toarray()).float()
+
+    # Save tf-idf vocab object
+    pickle.dump(tfidf, open("tfidf.pickle", "wb"))
+
+    print(X_train.shape)
 
     y_train = torch.tensor(dataset['train']['labels'])
     y_val = torch.tensor(dataset['validation']['labels'])
@@ -85,3 +95,6 @@ def collect_classifier_dataset():
     test_set = torch.utils.data.TensorDataset(X_test, y_test)
 
     return train_set, val_set, test_set
+
+if __name__ == '__main__':
+    collect_classifier_dataset()
