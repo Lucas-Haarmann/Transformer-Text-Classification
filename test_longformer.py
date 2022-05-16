@@ -39,6 +39,7 @@ def test_transformer():
             print(predicted)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+            print(f'Accuracy so far: {100 * correct // total} %')
 
     print(f'Accuracy of the model on 1000 test cases: {100 * correct // total} %')
 
