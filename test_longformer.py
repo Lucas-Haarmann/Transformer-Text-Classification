@@ -15,7 +15,7 @@ def test_transformer():
     test_x = torch.cat((dataset['test']['input_ids'], dataset['test']['attention_mask']), dim=-1)
 
     test_data = torch.utils.data.TensorDataset(test_x, test_y)
-    dataloader = torch.utils.data.DataLoader(test_data, batch_size=4, shuffle=False)
+    dataloader = torch.utils.data.DataLoader(test_data, batch_size=10, shuffle=False)
 
     num_labels = len(dataset_labels.idx_to_article)
     print('Loading model')
